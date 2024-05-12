@@ -8,6 +8,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import './page.css'
 
 
 
@@ -47,19 +48,13 @@ const Home = () => {
         };
 
         return (
-            <div style={{ marginLeft: 20, marginTop: 20 }}>
+            <div style={{ marginLeft: 20, marginTop: 30 }}>
                 <Typography variant="h4" gutterBottom>
                     {node.name}
                 </Typography>
-                <Button sx={{
-                    margin: 1
-                }} variant='contained' onClick={() => {
-                    if (node.name == treeData[0]?.name) {
-                        setOpenFiniDialog(true)
-                    } else {
-                        setOpenCompoDialog(true)
-                    }
-                }} >Plus d'information</Button>
+                <div className='compo'>
+
+                
 
                 <Dialog
                     open={openFiniDialog}
@@ -297,9 +292,23 @@ const Home = () => {
                 <div>
                     <TextField sx={{
                         minWidth: '400px'
-                    }} onChange={(e) => setNewChildName(e.target.value)} id="outlined-basic" value={newChildName} label="Entrez le nom du nouvel composant" variant="outlined" />
+                    }} variant="standard" onChange={(e) => setNewChildName(e.target.value)} id="outlined-basic" value={newChildName} label="Entrez le nom du nouvel composant" />
                 </div>
-                <Button sx={{ margin: 1 }} variant='contained' onClick={handleAddChild} >Ajouter un composant</Button>
+                <Button size='small' sx={{
+                    marginTop:'16px',
+                    marginLeft: '20px',
+                    borderRadius:'10px'
+                }} variant='contained' onClick={() => {
+                    if (node.name == treeData[0]?.name) {
+                        setOpenFiniDialog(true)
+                    } else {
+                        setOpenCompoDialog(true)
+                    }
+                }} >Plus d'information</Button>
+                <Button size='small' sx={{ marginTop:'16px',
+                    marginLeft: '20px',borderRadius:'10px' }} variant='contained' onClick={handleAddChild} >Ajouter un composant</Button>
+                </div>
+
                 {node.children && node.children.length > 0 && (
                     <div style={{ marginLeft: 20 }}>
                         {node.children.map((child) => (
@@ -360,14 +369,23 @@ const Home = () => {
     return (
         <div className='page'>
             <h1>Produit</h1>
+            <div className='prodfini'>
+
             <div>
                 <TextField sx={{
-                    minWidth: '300px'
-                }} value={rootName} id="outlined-basic" label="Entrez le nom du produit fini" variant="outlined" onChange={(e) => setRootName(e.target.value)} />
+                    minWidth: '300px',
+                    
+                }} value={rootName} id="outlined-basic" label="Entrez le nom du produit fini" variant="standard" onChange={(e) => setRootName(e.target.value)} />
             </div>
+            <div>
+
             <Button sx={{
-                margin: 1
-            }} variant='contained' onClick={handleCreateTree}>Créer le produit</Button>
+                    marginTop:'16px',
+                    marginLeft: '20px',
+                borderRadius:'10px'
+            }} variant='contained' onClick={handleCreateTree} size='small'>Créer le produit</Button>
+            </div>
+            </div>
             {treeData.length > 0 && (
                 <div >
                     {treeData.map((rootNode) => (

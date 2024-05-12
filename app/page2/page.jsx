@@ -9,6 +9,13 @@ const Page = () => {
     const [besoinNet, setBesoinNet] = useState(Array(12).fill(0))
     const [coutSetup, setCoutSetup] = useState()
     const [coutStockage, setCoutStockage] = useState()
+    const [recepPrev,setRecepPrev] = useState(Array(12).fill(0))
+    const [stockDispo,setStockDispo] = useState(Array(12).fill(0))
+    const [coutStockageTotal, setCoutStockageTotal] = useState()
+    const [nbSetup, setNbSetup] = useState()
+    const [coutTotal, setCoutTotal] = useState()
+
+
     const tableStyles = {
         borderCollapse: 'collapse',
         width: '100%'
@@ -30,6 +37,11 @@ const Page = () => {
 
     return (
         <div>
+                  <Typography sx={{
+                    marginBottom:'40px'
+                  }} variant="h6" gutterBottom>
+                  Il est fréquent d’avoir des temps/couts de reconfiguration importants, en particulier lorsqu’il s’agit de systèmes de production non flexibles, ce qui rendrait plus intéressant de n’effectuer les lancements que par lots. On applique donc une méthode de dimensionnement de lot (lot sizing) aux Besoins Nets afin d’obtenir les Réceptions Prévisionnelles. Les niveaux des stocks devraient être affectés.
+                  </Typography>
             {/* <TextField sx={{
                 margin: 1
             }} type="number" value={rootInitialStock[0]} onChange={(e) => {
@@ -47,7 +59,7 @@ const Page = () => {
                             updatedNeeds[index] = parseInt(e.target.value);
                             setBesoinNet(updatedNeeds);
                         }}
-                        id="outlined-basic" label={`Besoin du mois ${index + 1}`} variant="outlined" />
+                        id="outlined-basic" label={`Besoin Periode ${index + 1}`} variant="outlined" />
                 ))}
             </div>
             <div>
@@ -62,48 +74,7 @@ const Page = () => {
                     setCoutStockage(parseFloat(e.target.value))
                 }} id="outlined-basic" label="Cout du Stockage" variant="outlined" />
             </div>
-            <div>
-                <table style={tableStyles}>
-                    <thead>
-                        <tr>
-                            <th style={thStyles}>Période</th>
-                            {[...Array(12).keys()].map((period) => (
-                                <th key={period} style={thStyles}>{period + 1}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {['Besoin Net', 'Reception Previsionnelles', 'Stock Disponible'].map((category) => (
-                            <tr key={category}>
-                                <td style={tdStyles}>{category}</td>
-                                {[...Array(12).keys()].map((period) => (
-                                    <td key={`${category}-${period}`} style={tdStyles}>
-                                        {category === 'Besoin Net' ? besoinNet[period] : ''}
-                                        {/* {category === 'Reception Previsionnelles' ? (period === 0 ? 'Initial' : ravCompo[period - 1]) : ''}
-                                        {category === 'Stock Disponible' ? (period === 0 ? stockInitCompo[0] : stockInitCompo[period]) : ''} */}
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <Typography sx={{ margin: 5 }} variant="h5" gutterBottom>
-                    Cout de Stockage:
-                </Typography>
-            </div>
-            <div>
-                <Typography sx={{ margin: 5 }} variant="h5" gutterBottom>
-                    Nombre de setup:
-                </Typography>
-            </div>
-            <div>
-                <Typography sx={{ margin: 5 }} variant="h5" gutterBottom>
-                    Cout Total:
-                </Typography>
-            </div>
-            <Button onClick={() => {
+            <Button sx={{margin: 3,borderRadius:'10px'}} variant='contained' onClick={() => {
                 let matrice = [Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0), Array(12).fill(0),]
                 matrice[0] = besoinNet
                 for (let i = 0; i < 12; i++) {
@@ -250,9 +221,118 @@ const Page = () => {
                     }
                     matrice[12][i] = min + coutSetup + coutStockage * a
                 }
-                console.log('min', min)
-                console.log(matrice)
-            }}>Matrice</Button>
+                console.log(matrice)        
+                let a = []
+                for (let i = 11; i >= 0; i--) {
+                        let minimumindex = 1
+                        let minimum = matrice[1][i]
+                        for (let j = 1; j <12 ; j++) {
+                                if (matrice[j][i] >0) {
+
+                                    if (matrice[j][i] < minimum) {
+                                        minimum = matrice[j][i]
+                                        minimumindex=j
+                                    }
+                                }
+                            }
+                            a.push(minimumindex)
+                            i = minimumindex - 1 
+                }
+                let recprev=Array(12).fill(0)
+                console.log(a)
+                // a=a.reverse()
+                // console.log(a)
+                let j=11
+                a.map((element,index)=>{
+                    let x=0
+                    for (let i =j;i>=element-1;i-- ){
+                    x=x+besoinNet[i]
+                    }
+                    recprev[element-1]=x
+                    
+                    j=element-2
+                })
+                console.log(recprev)
+                setRecepPrev(recprev)
+                let stockdispo = Array(12).fill(0)
+                a=a.reverse()
+                console.log(a)
+                for (let i =0;i<a.length;i++){
+                    console.log(a[i])
+                    // console.log(i)
+                    // console.log(recprev[a[i]-1])
+                    if (i==a.length-1){
+                        let y = recprev[a[i]-1]
+                    for (let j = a[i]-1; j<12;j++){
+                        // console.log(besoinNet[j])
+                        console.log(j)
+                        stockdispo[j] = y-besoinNet[j]
+                        y = stockdispo[j]
+                    }
+                    }else{
+                        let y = recprev[a[i]-1]
+                        for (let j = a[i]-1; j<a[i+1]-1;j++){
+                            // console.log(besoinNet[j])
+                            console.log(j)
+                            stockdispo[j] = y-besoinNet[j]
+                            y = stockdispo[j]
+                        }
+                    }
+                }
+                console.log(stockdispo)
+                setStockDispo(stockdispo)
+                let s=0
+                stockdispo.map((element)=>{
+                    s=s+element
+                })
+                setCoutStockageTotal(s*coutStockage)
+                setNbSetup(a.length)
+                setCoutTotal(s*coutStockage +a.length*coutSetup )
+            }}>Obtenir le Plan</Button>
+            <div>
+                <table style={tableStyles}>
+                    <thead>
+                        <tr>
+                            <th style={thStyles}>Période</th>
+                            {[...Array(12).keys()].map((period) => (
+                                <th key={period} style={thStyles}>{period + 1}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {['Besoin Net', 'Reception Previsionnelles', 'Stock Disponible'].map((category) => (
+                            <tr key={category}>
+                                <td style={tdStyles}>{category}</td>
+                                {[...Array(12).keys()].map((period) => (
+                                    <td key={`${category}-${period}`} style={tdStyles}>
+                                        {category === 'Besoin Net' ? besoinNet[period] : ''}
+                                        {category === 'Reception Previsionnelles' ? recepPrev[period] : ''}
+                                        {category === 'Stock Disponible' ? stockDispo[period] : ''}
+                                        {/* {category === 'Reception Previsionnelles' ? (period === 0 ? 'Initial' : ravCompo[period - 1]) : ''}
+                                        {category === 'Stock Disponible' ? (period === 0 ? stockInitCompo[0] : stockInitCompo[period]) : ''} */}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <Typography sx={{ margin: 5 }} variant="h5" gutterBottom>
+                    Cout de Stockage: {coutStockageTotal}
+                </Typography>
+            </div>
+            <div>
+                <Typography sx={{ margin: 5 }} variant="h5" gutterBottom>
+                    Nombre de setup: {nbSetup}
+                </Typography>
+            </div>
+            <div>
+                <Typography sx={{ margin: 5 }} variant="h5" gutterBottom>
+                    Cout Total: {coutTotal}
+                </Typography>
+            </div>
+            
         </div>
     )
 }
